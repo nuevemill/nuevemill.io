@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta Motivacional</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        #ruleta-contenedor {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            border: 10px solid #ecf0f1;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: #fff;
+            margin-bottom: 40px;
+        }
+        
+        #ruleta-grupo {
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transform-origin: 50% 50%; /* Punto de giro central para la animación */
+        }
+
+        #indicador {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #e67e22;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #resultado {
+            margin-top: 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Mas happy <3</h1>
+
+    <div id="ruleta-contenedor">
+        <div id="indicador"></div>
+        <svg id="ruleta-svg" viewBox="0 0 400 400">
+            <g id="ruleta-grupo">
+                </g>
+        </svg>
+    </div>
+
+    <button id="girar-btn">GIRAR</button>
+
+    <p id="resultado"></p>
+
+    <script>
+        const frasesMotivadoras = [
+            "Trustea en el proceso",
+            "Tu meta es mas grande que tus miedos", 
+            "Si puedes soñarlo, puedes lograrlo.", 
+            "El camino no es olvidar el dolor, sino aprender a caminar con él.", 
+            "La felicidad no es un destino, es el camino.",
+            "El camino al exito es la actitud :D",
+            "El éxito es la suma de pequeños esfuerzos cada dia", 
+            "Siempre hay una razon por la que las cosas suceden",
+             "Lo unico imposible es lo que no intentas",
+            "madre mia willy eres increible", 
+            "Confia en ti y en tu potencial", 
+            "Ya tu sabe, dale.",
+            "No es sobre las ideas, sino como hacerlas realidad", 
+            "Tómate las cosas con calma y con extra de azucar para que no te amargues",
+            "Empieza donde estás, usa lo que tienes, haz lo mejor que puedas.", 
+            "A veces, el mejor plan es no tener ningún plan.", 
+            "Solo sabras de lo que eres capaz si lo intentas", 
+            "Confía en ti mismo, tu nunca desepcionas ;)",
+            "Ama sin medida cada parte de tu proceso", 
+            "Cuando todo parezca ir en tu contra, recuerda que el avión despega contra el viento, no a favor.",
+            "Tu sonrisa es lo mas bonito del dia de alguien", 
+            "No se trata de encontrar un camino, sino de disfrutar el viaje-pikachu(me entero que pikachu habla)",
+            "Eres suficiente hoy y siempre", 
+            "Hay que ser felices, no perfectos",
+            "Piensa en grande y piensa mas alla.", 
+            "No eres lo que logras, eres lo que superas", 
+            "A veces toca sacudirte como perrito, dejar ir lo malo y empezar de 0 con buena actitud :D", 
+            "Eres fuerte y sabemos que vas a llegar a grandes cosas", 
+            "Haz de tu vida un sueño y un sueño una realidad",
+            "No se trata de encontrar 'la' gran cosa que hacer. Se trata de encontrar 'una' pequeña cosa que hacer..",
+            "Desenrróllate que no eres sushi",
+            "Si hay olas muy fuertes saca tu tabla de surf y disfruta el momento.",
+            "Haz de cada día tu oportunidad de brillar, avisa para buscar los lentes de sol", 
+            "Estamos orgullosos de ti",
+            "No se trata de saber el camino completo, sino de dar el siguiente paso. Y tu siguiente paso es permitirte sentir, sanar y, poco a poco, redescubrirte",
+            "Cree que puedes, cuando creas, ya estarás a mitad de camino", 
+            "La única limitación es la que pones en tu propia mente.",
+            "Tu puedes, hazlo", 
+            "Estar perdido es el primer paso para encontrarse.", 
+            "No estas solo",
+            "El secreto para salir adelante es empezar.", 
+            "Todo tiene su tiempo.",
+            "No se trata de encontrar una recompensa, sino de disfrutar el viaje como one piece",
+            "El más valiente no es el que lidera mas batallas, sino el que realmente enfrenta sus miedos-Zoro",
+            "Tu eres el peligro (breaking bad referencia ojo pelao)",
+            "Cuando te enfocas en lo bueno, lo bueno se pone mejor.",
+            "Dedicale las cosas a alguien, las cosas hechas con amor siempre salen bien.", 
+            "Eres más fuerte de lo que crees.", 
+            "Donde estas no determina a donde puedes llegar.", 
+            "Tu potencial es ilimitado."
+        ];
+
+        const ruletaGrupo = document.getElementById('ruleta-grupo');
+        const girarBtn = document.getElementById('girar-btn');
+        const resultadoTexto = document.getElementById('resultado');
+
+        const numOpciones = frasesMotivadoras.length;
+        const anguloPorSegmento = 360 / numOpciones;
+
+        let estaGirando = false;
+        
+        function describeArc(x, y, radius, startAngle, endAngle){
+            var start = polarToCartesian(x, y, radius, endAngle);
+            var end = polarToCartesian(x, y, radius, startAngle);
+            var largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+            var d = [
+                "M", start.x, start.y, 
+                "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+                "L", x, y,
+                "Z"
+            ].join(" ");
+            return d;       
+        }
+
+        function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+            var angleInRadians = (angleInDegrees-90) * Math.PI / 180.0;
+            return {
+                x: centerX + (radius * Math.cos(angleInRadians)),
+                y: centerY + (radius * Math.sin(angleInRadians))
+            };
+        }
+
+        function inicializarRuletaVisualmente() {
+            ruletaGrupo.innerHTML = '';
+            
+            const centroX = 200;
+            const centroY = 200;
+            const radio = 200;
+
+            for (let i = 0; i < numOpciones; i++) {
+                const anguloInicio = i * anguloPorSegmento;
+                const anguloFin = (i + 1) * anguloPorSegmento;
+                
+                const segmento = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const pathData = describeArc(centroX, centroY, radio, anguloInicio, anguloFin);
+                segmento.setAttribute("d", pathData);
+                const hue = (i * (360 / numOpciones));
+                segmento.setAttribute("fill", `hsl(${hue}, 80%, 55%)`);
+                segmento.setAttribute("stroke", "rgba(255,255,255,0.2)");
+                segmento.setAttribute("stroke-width", "1");
+                ruletaGrupo.appendChild(segmento);
+
+                // Nuevo código para el texto
+                const textoPath = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                const anguloMedio = anguloInicio + (anguloPorSegmento / 2);
+                const textoPos = polarToCartesian(centroX, centroY, radio * 0.7, anguloMedio);
+
+                // Rota el texto para que esté vertical y apunte hacia el centro
+                const rotacionTexto = anguloMedio + 90; // +90 grados para que la base del texto apunte hacia el centro
+                textoPath.setAttribute("transform", `rotate(${rotacionTexto}, ${textoPos.x}, ${textoPos.y})`);
+                textoPath.setAttribute("x", textoPos.x);
+                textoPath.setAttribute("y", textoPos.y);
+                textoPath.setAttribute("text-anchor", "middle"); // Centra el texto en su punto de anclaje
+                textoPath.setAttribute("alignment-baseline", "central");
+                textoPath.setAttribute("font-size", "8px");
+                textoPath.setAttribute("font-family", "Arial, sans-serif");
+                textoPath.setAttribute("fill", "#fff");
+
+                let frase = frasesMotivadoras[i];
+                if (frase.length > 20) {
+                    frase = frase.substring(0, 18) + "...";
+                }
+                textoPath.textContent = frase;
+                
+                ruletaGrupo.appendChild(textoPath);
+            }
+        }
+        
+        function girarRuleta() {
+            if (estaGirando) return;
+            estaGirando = true;
+            girarBtn.disabled = true;
+            resultadoTexto.textContent = "Girando...";
+
+            const vueltasMinimas = 5;
+            const anguloGiroAleatorio = Math.floor(Math.random() * 360);
+            const giroTotal = (360 * vueltasMinimas) + anguloGiroAleatorio;
+            
+            ruletaGrupo.style.transform = `rotate(${giroTotal}deg)`;
+
+            ruletaGrupo.addEventListener('transitionend', () => {
+                estaGirando = false;
+                girarBtn.disabled = false;
+
+                const anguloFinalNormalizado = giroTotal % 360;
+                const anguloEnRuleta = (360 - (anguloFinalNormalizado % 360)) % 360;
+                let indiceGanador = Math.floor(anguloEnRuleta / anguloPorSegmento);
+
+                if (indiceGanador >= numOpciones) {
+                    indiceGanador = numOpciones - 1;
+                }
+                
+                const fraseGanadora = frasesMotivadoras[indiceGanador];
+                resultadoTexto.textContent = `¡"${fraseGanadora}"!`;
+            }, { once: true });
+        }
+
+        girarBtn.addEventListener('click', girarRuleta);
+
+        inicializarRuletaVisualmente();
+    </script>
+
+</body>
+</html>
